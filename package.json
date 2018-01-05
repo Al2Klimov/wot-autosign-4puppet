@@ -1,0 +1,35 @@
+{
+  "name": "wot-autosign-4puppet",
+  "version": "0.0.0",
+  "description": "Automatically signs Puppet(R) agent CSRs based on a web of trust",
+  "main": "./wot-autosign-4puppet.js",
+  "bin": {
+    "wot-autosign-4puppet": "./wot-autosign-4puppet.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Al2Klimov/wot-autosign-4puppet.git"
+  },
+  "keywords": [
+    "wot",
+    "web",
+    "trust",
+    "auto",
+    "sign",
+    "csr",
+    "certificate",
+    "ssl",
+    "tls",
+    "puppet",
+    "agent"
+  ],
+  "author": "Alexander A. Klimov",
+  "license": "LGPL-2.1",
+  "bugs": {
+    "url": "https://github.com/Al2Klimov/wot-autosign-4puppet/issues"
+  },
+  "homepage": "https://github.com/Al2Klimov/wot-autosign-4puppet#readme"
+}
