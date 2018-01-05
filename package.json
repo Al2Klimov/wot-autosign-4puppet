@@ -31,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/Al2Klimov/wot-autosign-4puppet/issues"
   },
-  "homepage": "https://github.com/Al2Klimov/wot-autosign-4puppet#readme"
+  "homepage": "https://github.com/Al2Klimov/wot-autosign-4puppet#readme",
+  "dependencies": {
+    "jsonschema": "^1.2.2"
+  }
 }
