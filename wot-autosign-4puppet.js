@@ -6,6 +6,7 @@ if (module !== require.main) {
 }
 
 const config = require("./lib/config");
+const puppet = require("./lib/puppet");
 
 
 process.on("unhandledRejection", reason => {
@@ -13,13 +14,17 @@ process.on("unhandledRejection", reason => {
 });
 
 (async () => {
-    let configs = await config.load(process.argv.slice(2));
+    let [configs, puppetConfig] = await Promise.all([
+        config.load(process.argv.slice(2)),
+        puppet.config.print()
+    ]);
 
     if (! configs.length) {
         throw new Error("Nothing to do");
     }
 
     console.log(JSON.stringify(configs));
+    console.log(puppetConfig);
 })().catch(err => {
     throw err;
 });
