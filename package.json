@@ -33,7 +33,9 @@
   },
   "homepage": "https://github.com/Al2Klimov/wot-autosign-4puppet#readme",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "express": "^4.16.2",
+    "helmet": "^3.9.0",
     "jsonschema": "^1.2.2"
   }
 }
