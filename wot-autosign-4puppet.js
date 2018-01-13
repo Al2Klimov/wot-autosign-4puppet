@@ -17,7 +17,7 @@ process.on("unhandledRejection", reason => {
 });
 
 (async () => {
-    let [configs, puppetConfig] = await Promise.all([
+    let [configs, puppetConfig] = await util.Promise.all([
         config.load(process.argv.slice(2)),
         puppet.config.print()
     ]);
@@ -31,9 +31,9 @@ process.on("unhandledRejection", reason => {
         : new Master(config, puppetConfig));
 
     try {
-        await Promise.all(services.map(service => service.start()));
+        await util.Promise.all(services.map(service => service.start()));
     } catch (e) {
-        await Promise.all(services.map(service => service.stop()));
+        await util.Promise.all(services.map(service => service.stop()));
         throw e;
     }
 
@@ -45,7 +45,7 @@ process.on("unhandledRejection", reason => {
     function shutdown() {
         clear();
 
-        Promise.all(services.map(service => service.stop())).catch(err => {
+        util.Promise.all(services.map(service => service.stop())).catch(err => {
             throw err;
         });
     }
