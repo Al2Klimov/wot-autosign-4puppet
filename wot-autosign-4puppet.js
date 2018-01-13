@@ -12,10 +12,6 @@ const puppet = require("./lib/puppet");
 const util = require("./lib/util");
 
 
-process.on("unhandledRejection", reason => {
-    throw reason;
-});
-
 (async () => {
     let [configs, puppetConfig] = await util.Promise.all([
         config.load(process.argv.slice(2)),
@@ -45,10 +41,6 @@ process.on("unhandledRejection", reason => {
     function shutdown() {
         clear();
 
-        util.Promise.all(services.map(service => service.stop())).catch(err => {
-            throw err;
-        });
+        util.Promise.all(services.map(service => service.stop())).catch(util.Promise.ultimaRatio);
     }
-})().catch(err => {
-    throw err;
-});
+})().catch(util.Promise.ultimaRatio);
