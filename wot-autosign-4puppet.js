@@ -9,6 +9,7 @@ const Agent = require("./lib/Agent");
 const config = require("./lib/config");
 const Master = require("./lib/Master");
 const puppet = require("./lib/puppet");
+const Services = require("./lib/Services");
 const util = require("./lib/util");
 
 
@@ -22,16 +23,13 @@ const util = require("./lib/util");
         throw new Error("Nothing to do");
     }
 
-    let services = configs.map(config => typeof config.listen === "undefined"
-        ? new Agent(config, puppetConfig)
-        : new Master(config, puppetConfig));
+    let services = new Services(
+        configs.map(config => typeof config.listen === "undefined"
+            ? new Agent(config, puppetConfig)
+            : new Master(config, puppetConfig))
+    );
 
-    try {
-        await util.Promise.all(services.map(service => service.start()));
-    } catch (e) {
-        await util.Promise.all(services.map(service => service.stop()));
-        throw e;
-    }
+    await services.start();
 
     let clear = util.tempEvents(process, {
         SIGTERM: shutdown,
@@ -40,7 +38,6 @@ const util = require("./lib/util");
 
     function shutdown() {
         clear();
-
-        util.Promise.all(services.map(service => service.stop())).catch(util.Promise.ultimaRatio);
+        services.stop().catch(util.Promise.ultimaRatio);
     }
 })().catch(util.Promise.ultimaRatio);
