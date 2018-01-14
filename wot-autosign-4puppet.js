@@ -7,14 +7,17 @@ if (module !== require.main) {
 
 const Agent = require("./lib/Agent");
 const config = require("./lib/config");
+const hack = require("./lib/hack");
 const Master = require("./lib/Master");
 const puppet = require("./lib/puppet");
 const Services = require("./lib/Services");
 const util = require("./lib/util");
 
 
+hack();
+
 (async () => {
-    let [configs, puppetConfig] = await util.Promise.all([
+    let [configs, puppetConfig] = await Promise.all([
         config.load(process.argv.slice(2)),
         puppet.config.print()
     ]);
