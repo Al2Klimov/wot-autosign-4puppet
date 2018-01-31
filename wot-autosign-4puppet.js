@@ -5,19 +5,17 @@ if (module !== require.main) {
     throw new Error("RTFM");
 }
 
-require("./lib/hack")();
-
 
 const Agent = require("./lib/Agent");
 const {load: config} = require("./lib/config");
 const Master = require("./lib/Master");
 const {config: {print: puppet}} = require("./lib/puppet");
 const Services = require("./lib/Services");
-const {Promise: {ultimaRatio}, tempEvents: tempEvents} = require("./lib/util");
+const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./lib/util");
 
 
 (async () => {
-    let [configs, puppetConfig] = await Promise.all([config(process.argv.slice(2)), puppet()]);
+    let [configs, puppetConfig] = await all([config(process.argv.slice(2)), puppet()]);
 
     if (! configs.length) {
         throw new Error("Nothing to do");
