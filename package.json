@@ -2,9 +2,8 @@
   "name": "wot-autosign-4puppet",
   "version": "0.0.0",
   "description": "Automatically signs Puppet(R) agent CSRs based on a web of trust",
-  "main": "./wot-autosign-4puppet.js",
   "bin": {
-    "wot-autosign-4puppet": "./wot-autosign-4puppet.js"
+    "wot-autosign-4puppet": "./src/daemon.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -1,17 +1,12 @@
 // For the terms of use see COPYRIGHT.md
 
 
-if (module !== require.main) {
-    throw new Error("RTFM");
-}
-
-
-const Agent = require("./lib/Agent");
-const {load: config} = require("./lib/config");
-const Master = require("./lib/Master");
-const {config: {print: puppet}} = require("./lib/puppet");
-const Services = require("./lib/Services");
-const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./lib/util");
+const Agent = require("./Agent");
+const {load: config} = require("./config");
+const Master = require("./Master");
+const {config: {print: puppet}} = require("./puppet");
+const Services = require("./Services");
+const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./util");
 
 
 (async () => {
