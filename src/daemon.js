@@ -16,9 +16,25 @@ const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./util");
         throw new Error("Nothing to do");
     }
 
-    let services = new Services({...configs.map(config => typeof config.listen === "undefined"
-        ? new Agent(config, puppetConfig)
-        : new Master(config, puppetConfig))});
+    let services = {};
+
+    for (let config of configs) {
+        if (typeof config.listen === "undefined") {
+            if (typeof services.agent !== "undefined") {
+                throw new Error("More than one agent service defined");
+            }
+
+            services.agent = new Agent(config, puppetConfig);
+        } else {
+            if (typeof services.master !== "undefined") {
+                throw new Error("More than one master service defined");
+            }
+
+            services.master = new Master(config, puppetConfig);
+        }
+    }
+
+    services = new Services(services);
 
     await services.start();
 
