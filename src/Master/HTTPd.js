@@ -3,22 +3,23 @@
 
 const {json: bodyParser} = require("body-parser");
 const express = require("express");
-const {https: {Server: {close: httpsServerClose}}} = require("./promisified");
+const {https: {Server: {close: httpsServerClose}}} = require("../promisified");
 const {hidePoweredBy, noCache} = require("helmet");
 const {createServer} = require("https");
 const {Validator} = require("jsonschema");
-const Mutex = require("./Mutex");
-const {net: {Server: {listen}}} = require("./sc");
-const Service = require("./Service");
-const {fs: {readFile}, middleware: {handleErrors}, Promise: {all}} = require("./util");
+const Mutex = require("../Mutex");
+const {net: {Server: {listen}}} = require("../sc");
+const Service = require("../Service");
+const {fs: {readFile}, middleware: {fromPromiseFactory, handleErrors}, Promise: {all}} = require("../util");
 
 
 module.exports = class extends Service {
-    constructor(config, puppetConfig) {
+    constructor(config, puppetConfig, db) {
         super();
 
         this.config = config;
         this.puppetConfig = puppetConfig;
+        this.db = db;
         this.server = null;
         this.stateChangeMutex = new Mutex();
 
@@ -131,17 +132,35 @@ module.exports = class extends Service {
                 handleErrors(bodyParser(), (err, req, res) => {
                     res.status(400).end();
                 }),
-                (req, res) => {
+                fromPromiseFactory(async (req, res) => {
                     if (JSON.stringify(req.body) === emptyObjectJson
                         || requestValidator.validate(req.body, schema).errors.length) {
                         res.status(400).end();
                         return;
                     }
 
-                    // TODO
+                    let status, db = this.db;
 
-                    res.end();
-                }
+                    await db.doTask(async () => {
+                        let newAgent = req.params.agent;
+                        let row = await db.fetchOne("SELECT status FROM agent WHERE name = ?;", newAgent);
+
+                        if (row === undefined) {
+                            await db.runSql(
+                                "INSERT INTO agent(name, csr_chksum_algo, csr_chksum, status) VALUES (?, ?, ?, 0);",
+                                newAgent,
+                                req.body.algo,
+                                req.body.checksum
+                            );
+
+                            status = 202;
+                        } else {
+                            status = row.status ? 201 : 202;
+                        }
+                    });
+
+                    res.status(status).end();
+                })
             );
     }
 };

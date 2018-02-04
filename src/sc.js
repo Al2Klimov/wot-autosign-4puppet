@@ -1,6 +1,7 @@
 // For the terms of use see COPYRIGHT.md
 
 
+const {Database} = require("sqlite3");
 const {tempEvents} = require("./util");
 
 
@@ -23,6 +24,20 @@ module.exports = {
                     this.listen(...args);
                 });
             }
+        }
+    },
+
+    sqlite3: {
+        Database: {
+            new: (...args) => new Promise((resolve, reject) => {
+                let db = new Database(...args, err => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(db);
+                    }
+                });
+            })
         }
     }
 };

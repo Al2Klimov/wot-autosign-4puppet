@@ -1,20 +1,33 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const {readdir, readFile, stat} = require("fs");
+const {mkdtemp, readdir, readFile, rename, rmdir, stat, unlink} = require("fs");
 const {Server: {prototype: {close: httpsServerClose}}} = require("https");
+const {Database} = require("sqlite3");
 
 
 module.exports = {
     fs: {
+        mkdtemp: promisify(mkdtemp),
         readdir: promisify(readdir),
         readFile: promisify(readFile),
-        stat: promisify(stat)
+        rename: promisify(rename),
+        rmdir: promisify(rmdir),
+        stat: promisify(stat),
+        unlink: promisify(unlink)
     },
 
     https: {
         Server: {
             close: promisify(httpsServerClose)
+        }
+    },
+
+    sqlite3: {
+        Database: {
+            close: promisify(Database.prototype.close),
+            run: promisify(Database.prototype.run),
+            get: promisify(Database.prototype.get)
         }
     }
 };

@@ -58,7 +58,7 @@ let schema = {
                         responsible: agentNames
                     })
                 },
-                db: {type: "string"}
+                datadir: {type: "string"}
             },
             {title: "Master config"}
         ),

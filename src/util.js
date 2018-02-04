@@ -39,6 +39,10 @@ module.exports = {
     },
 
     middleware: {
+        fromPromiseFactory: f => (req, res, next) => {
+            f(req, res, next).catch(reason => next(reason));
+        },
+
         handleErrors: (middleware, errorHandler) => (req, res, next) => {
             middleware(req, res, (err, ...args) => {
                 if (err instanceof Error) {
