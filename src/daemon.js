@@ -16,11 +16,9 @@ const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./util");
         throw new Error("Nothing to do");
     }
 
-    let services = new Services(
-        configs.map(config => typeof config.listen === "undefined"
-            ? new Agent(config, puppetConfig)
-            : new Master(config, puppetConfig))
-    );
+    let services = new Services({...configs.map(config => typeof config.listen === "undefined"
+        ? new Agent(config, puppetConfig)
+        : new Master(config, puppetConfig))});
 
     await services.start();
 
