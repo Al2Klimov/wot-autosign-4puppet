@@ -34,7 +34,10 @@ const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./util");
         }
     }
 
-    services = new Services(services);
+    services = new Services(
+        services,
+        typeof services.agent === "undefined" || typeof services.master === "undefined" ? {} : {agent: ["master"]}
+    );
 
     await services.start();
 
