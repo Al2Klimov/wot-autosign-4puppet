@@ -6,7 +6,7 @@ const {Promise: {all}} = require("./util");
 const Service = require("./Service");
 
 
-module.exports = class extends Service {
+module.exports = class extends Service() {
     constructor(services, dependencies) {
         super();
 

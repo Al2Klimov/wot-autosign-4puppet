@@ -9,7 +9,7 @@ const Service = require("./Service");
 const {OPEN_READWRITE} = require("sqlite3");
 
 
-module.exports = class extends Service {
+module.exports = class extends Service() {
     constructor(path, schema) {
         super();
 

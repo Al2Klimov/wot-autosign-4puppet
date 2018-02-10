@@ -4,6 +4,6 @@
 const Service = require("./Service");
 
 
-module.exports = class extends Service {
+module.exports = class extends Service() {
     // TODO
 };

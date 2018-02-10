@@ -13,7 +13,7 @@ const Service = require("../Service");
 const {fs: {readFile}, middleware: {fromPromiseFactory, handleErrors}, Promise: {all}} = require("../util");
 
 
-module.exports = class extends Service {
+module.exports = class extends Service() {
     constructor(config, puppetConfig, db) {
         super();
 

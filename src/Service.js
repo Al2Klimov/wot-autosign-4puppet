@@ -1,7 +1,7 @@
 // For the terms of use see COPYRIGHT.md
 
 
-module.exports = class {
+module.exports = (B = Object) => class extends B {
     async start() {
     }
 
