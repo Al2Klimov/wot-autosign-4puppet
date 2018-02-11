@@ -4,7 +4,11 @@
 const {fs: {readdir, stat}} = require("./util/promisified");
 const {Validator} = require("jsonschema");
 const {join} = require("path");
-const {fs: {readFile}, Promise: {all}} = require("./util/misc");
+
+const {
+    fs: {readFile},
+    Promise: {all}
+} = require("./util/misc");
 
 
 let configValidator = new Validator();

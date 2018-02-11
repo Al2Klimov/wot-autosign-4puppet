@@ -3,10 +3,14 @@
 
 const Mutex = require("../concurrency/Mutex");
 const {join} = require("path");
-const {fs: {mkdtemp, rename, rmdir, stat, unlink}, sqlite3: {Database: {close: closeDb, get: fetchOne, run: runSql}}} = require("../util/promisified");
 const {sqlite3: {Database: {new: newDb}}} = require("../util/sc");
 const Service = require("./Service");
 const {OPEN_READWRITE} = require("sqlite3");
+
+const {
+    fs: {mkdtemp, rename, rmdir, stat, unlink},
+    sqlite3: {Database: {close: closeDb, get: fetchOne, run: runSql}}
+} = require("../util/promisified");
 
 
 module.exports = class extends Service() {

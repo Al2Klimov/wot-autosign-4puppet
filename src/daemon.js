@@ -6,7 +6,11 @@ const {load: config} = require("./config");
 const Master = require("./services/Master");
 const {config: {print: puppet}} = require("./puppet");
 const Services = require("./services/Services");
-const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./util/misc");
+
+const {
+    Promise: {all, ultimaRatio},
+    tempEvents
+} = require("./util/misc");
 
 
 (async () => {

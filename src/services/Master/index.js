@@ -14,7 +14,11 @@ const Services = require("../Services");
 const TaskExecutor = require("../TaskExecutor");
 const Timer = require("../Timer");
 const {agentNames2Filter} = require("./util");
-const {child_process: {wait}, Promise: {all}} = require("../../util/misc");
+
+const {
+    child_process: {wait},
+    Promise: {all}
+} = require("../../util/misc");
 
 
 const csrFile = /^(.+)\.pem$/i, crLf = /[\r\n]/;

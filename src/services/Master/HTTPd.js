@@ -12,7 +12,12 @@ const Mutex = require("../../concurrency/Mutex");
 const {net: {Server: {listen}}} = require("../../util/sc");
 const Service = require("../Service");
 const {agentNames2Filter} = require("./util");
-const {fs: {readFile}, middleware: {fromPromiseFactory, handleErrors}, Promise: {all}} = require("../../util/misc");
+
+const {
+    fs: {readFile},
+    middleware: {fromPromiseFactory, handleErrors},
+    Promise: {all}
+} = require("../../util/misc");
 
 
 module.exports = class extends Service(EventEmitter) {

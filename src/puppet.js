@@ -2,7 +2,12 @@
 
 
 const {spawn} = require("child_process");
-const {child_process: {wait}, Promise: {all}, stream: {readAll}} = require("./util/misc");
+
+const {
+    child_process: {wait},
+    Promise: {all},
+    stream: {readAll}
+} = require("./util/misc");
 
 
 let puppetConfigLine = /^([^ =]+) = (.+)$/;
