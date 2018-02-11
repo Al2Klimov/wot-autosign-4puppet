@@ -2,6 +2,7 @@
 
 
 const {json: bodyParser} = require("body-parser");
+const {EventEmitter} = require("events");
 const express = require("express");
 const {https: {Server: {close: httpsServerClose}}} = require("../promisified");
 const {hidePoweredBy, noCache} = require("helmet");
@@ -10,10 +11,11 @@ const {Validator} = require("jsonschema");
 const Mutex = require("../Mutex");
 const {net: {Server: {listen}}} = require("../sc");
 const Service = require("../Service");
+const {agentNames2Filter} = require("./util");
 const {fs: {readFile}, middleware: {fromPromiseFactory, handleErrors}, Promise: {all}} = require("../util");
 
 
-module.exports = class extends Service() {
+module.exports = class extends Service(EventEmitter) {
     constructor(config, puppetConfig, db) {
         super();
 
@@ -154,6 +156,8 @@ module.exports = class extends Service() {
                             );
 
                             status = 202;
+
+                            this.emit("agent", newAgent);
                         } else {
                             status = row.status ? 201 : 202;
                         }
@@ -164,13 +168,3 @@ module.exports = class extends Service() {
             );
     }
 };
-
-function agentNames2Filter(agentNames) {
-    if (agentNames instanceof Array) {
-        agentNames = new Set(agentNames);
-        return agentName => agentNames.has(agentName);
-    }
-
-    agentNames = new RegExp(agentNames);
-    return agentName => agentNames.exec(agentName) !== null;
-}
