@@ -7,14 +7,14 @@ const Db = require("../Db");
 const DirectoryFeed = require("../DirectoryFeed");
 const HTTPd = require("./HTTPd");
 const {join} = require("path");
-const MultiMutex = require("../MultiMutex");
-const {fs: {readFile, unlink}} = require("../promisified");
+const MultiMutex = require("../../concurrency/MultiMutex");
+const {fs: {readFile, unlink}} = require("../../util/promisified");
 const Service = require("../Service");
 const Services = require("../Services");
 const TaskExecutor = require("../TaskExecutor");
 const Timer = require("../Timer");
 const {agentNames2Filter} = require("./util");
-const {child_process: {wait}, Promise: {all}} = require("../util");
+const {child_process: {wait}, Promise: {all}} = require("../../util/misc");
 
 
 const csrFile = /^(.+)\.pem$/i, crLf = /[\r\n]/;

@@ -1,12 +1,12 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const Agent = require("./Agent");
+const Agent = require("./services/Agent");
 const {load: config} = require("./config");
-const Master = require("./Master");
+const Master = require("./services/Master");
 const {config: {print: puppet}} = require("./puppet");
-const Services = require("./Services");
-const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./util");
+const Services = require("./services/Services");
+const {Promise: {all, ultimaRatio}, tempEvents: tempEvents} = require("./util/misc");
 
 
 (async () => {

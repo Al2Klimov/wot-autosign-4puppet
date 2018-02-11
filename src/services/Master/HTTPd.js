@@ -4,15 +4,15 @@
 const {json: bodyParser} = require("body-parser");
 const {EventEmitter} = require("events");
 const express = require("express");
-const {https: {Server: {close: httpsServerClose}}} = require("../promisified");
+const {https: {Server: {close: httpsServerClose}}} = require("../../util/promisified");
 const {hidePoweredBy, noCache} = require("helmet");
 const {createServer} = require("https");
 const {Validator} = require("jsonschema");
-const Mutex = require("../Mutex");
-const {net: {Server: {listen}}} = require("../sc");
+const Mutex = require("../../concurrency/Mutex");
+const {net: {Server: {listen}}} = require("../../util/sc");
 const Service = require("../Service");
 const {agentNames2Filter} = require("./util");
-const {fs: {readFile}, middleware: {fromPromiseFactory, handleErrors}, Promise: {all}} = require("../util");
+const {fs: {readFile}, middleware: {fromPromiseFactory, handleErrors}, Promise: {all}} = require("../../util/misc");
 
 
 module.exports = class extends Service(EventEmitter) {

@@ -2,7 +2,7 @@
 
 
 const {EventEmitter} = require("events");
-const Mutex = require("./Mutex");
+const Mutex = require("../concurrency/Mutex");
 const Service = require("./Service");
 
 

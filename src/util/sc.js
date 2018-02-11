@@ -2,7 +2,7 @@
 
 
 const {Database} = require("sqlite3");
-const {tempEvents} = require("./util");
+const {tempEvents} = require("./misc");
 
 
 module.exports = {

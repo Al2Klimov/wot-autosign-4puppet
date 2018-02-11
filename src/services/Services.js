@@ -1,8 +1,8 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const Mutex = require("./Mutex");
-const {Promise: {all}} = require("./util");
+const Mutex = require("../concurrency/Mutex");
+const {Promise: {all}} = require("../util/misc");
 const Service = require("./Service");
 
 

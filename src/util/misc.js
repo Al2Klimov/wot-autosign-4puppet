@@ -1,7 +1,7 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const Semaphore = require("./Semaphore");
+const Semaphore = require("../concurrency/Semaphore");
 const {fs: {readFile}} = require("./promisified");
 
 
