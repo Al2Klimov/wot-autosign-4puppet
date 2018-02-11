@@ -35,6 +35,8 @@ let agentNames = {
     ]
 };
 
+let logging = objectAllRequired({level: {enum: ["critical", "error", "warning", "info", "debug"]}});
+
 let schema = {
     oneOf: [
         objectAllRequired(
@@ -62,6 +64,7 @@ let schema = {
                         responsible: agentNames
                     })
                 },
+                logging: logging,
                 datadir: {type: "string"}
             },
             {title: "Master config"}
@@ -70,6 +73,7 @@ let schema = {
             {
                 csrdir: {type: "string"},
                 db: {type: "string"},
+                logging: logging,
                 master: objectAllRequired({
                     host: {
                         type: "string",

@@ -85,13 +85,7 @@ module.exports = {
                     }
                 }
             }
-        }),
-
-        ultimaRatio: err => {
-            setTimeout(() => {
-                throw err;
-            }, 0);
-        }
+        })
     },
 
     stream: {

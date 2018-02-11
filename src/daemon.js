@@ -3,15 +3,18 @@
 
 const Agent = require("./services/Agent");
 const {load: config} = require("./config");
+const Logger = require("./Logger");
 const Master = require("./services/Master");
 const {config: {print: puppet}} = require("./puppet");
 const Services = require("./services/Services");
 
 const {
-    Promise: {all, ultimaRatio},
+    Promise: {all},
     tempEvents
 } = require("./util/misc");
 
+
+let logger = new Logger("critical");
 
 (async () => {
     let [configs, puppetConfig] = await all([config(process.argv.slice(2)), puppet()]);
@@ -55,3 +58,8 @@ const {
         services.stop().catch(ultimaRatio);
     }
 })().catch(ultimaRatio);
+
+function ultimaRatio(reason) {
+    process.exitCode = 1;
+    logger.critical(reason);
+}

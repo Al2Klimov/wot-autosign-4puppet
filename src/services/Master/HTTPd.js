@@ -51,6 +51,10 @@ module.exports = class extends Service(EventEmitter) {
                     )
                 );
 
+                let onError = (err, req, res, next) => {
+                    this.emit("error", err);
+                };
+
                 this.server = createServer(
                     {
                         cert: [cacert, hostcert],
@@ -61,8 +65,10 @@ module.exports = class extends Service(EventEmitter) {
                         crl: cacrl,
                         secureProtocol: "TLSv1_2_method"
                     },
-                    this.express()
-                );
+                    this.express(onError)
+                )
+                    .on("error", onError)
+                    .on("tlsClientError", onError);
 
                 try {
                     let listenEP = listen.bind(this.server);
@@ -88,7 +94,7 @@ module.exports = class extends Service(EventEmitter) {
         });
     }
 
-    express() {
+    express(onError) {
         let emptyObjectJson = JSON.stringify({});
         let requestValidator = new Validator();
 
@@ -165,6 +171,7 @@ module.exports = class extends Service(EventEmitter) {
 
                     res.status(202).end();
                 })
-            );
+            )
+            .use(onError);
     }
 };

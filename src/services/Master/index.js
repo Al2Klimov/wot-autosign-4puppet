@@ -6,6 +6,7 @@ const {createHash} = require("crypto");
 const Db = require("../Db");
 const DirectoryFeed = require("../DirectoryFeed");
 const HTTPd = require("./HTTPd");
+const Logger = require("../../Logger");
 const {join} = require("path");
 const MultiMutex = require("../../concurrency/MultiMutex");
 const {fs: {readFile, unlink}} = require("../../util/promisified");
@@ -34,8 +35,14 @@ module.exports = class extends Service() {
 
         super();
 
+        let logger = new Logger(config.logging.level);
+
+        let onError = error => {
+            logger.error(error)
+        };
+
         this.csrdir = puppetConfig.get("csrdir");
-        this.taskExecutor = new TaskExecutor();
+        this.taskExecutor = (new TaskExecutor()).on("error", onError);
         this.timer = new Timer();
         this.responsible = config.web_of_trust.map(wot => agentNames2Filter(wot.responsible));
         this.agentsLocks = new MultiMutex;
@@ -47,8 +54,12 @@ module.exports = class extends Service() {
         this.services = new Services(
             {
                 db: this.db,
-                directoryFeed: (new DirectoryFeed(this.csrdir)).on("change", this.onCsrDirChange.bind(this)),
-                httpd: (new HTTPd(config, puppetConfig, this.db)).on("agent", this.onNewAgent.bind(this)),
+                directoryFeed: (new DirectoryFeed(this.csrdir))
+                    .on("change", this.onCsrDirChange.bind(this))
+                    .on("error", onError),
+                httpd: (new HTTPd(config, puppetConfig, this.db))
+                    .on("agent", this.onNewAgent.bind(this))
+                    .on("error", onError),
                 taskExecutor: this.taskExecutor,
                 timer: this.timer
             },
