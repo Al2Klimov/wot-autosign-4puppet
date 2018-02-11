@@ -37,7 +37,7 @@ module.exports = class extends Service() {
         this.agentsLocks = new MultiMutex;
 
         this.db = new Db(join(config.datadir, "db.sqlite3"), [
-            "CREATE TABLE agent ( name TEXT PRIMARY KEY, csr_chksum_algo TEXT, csr_chksum TEXT, status INT );"
+            "CREATE TABLE agent ( name TEXT PRIMARY KEY, csr_chksum_algo TEXT, csr_chksum TEXT );"
         ]);
 
         this.services = new Services(
@@ -147,9 +147,6 @@ module.exports = class extends Service() {
     getAgentRow(agent) {
         let db = this.db;
 
-        return db.doTask(() => db.fetchOne(
-            "SELECT csr_chksum_algo, csr_chksum, status FROM agent WHERE name = ?;",
-            agent
-        ));
+        return db.doTask(() => db.fetchOne("SELECT csr_chksum_algo, csr_chksum FROM agent WHERE name = ?;", agent));
     }
 };

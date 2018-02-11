@@ -141,29 +141,24 @@ module.exports = class extends Service(EventEmitter) {
                         return;
                     }
 
-                    let status, db = this.db;
+                    let db = this.db;
 
                     await db.doTask(async () => {
                         let newAgent = req.params.agent;
-                        let row = await db.fetchOne("SELECT status FROM agent WHERE name = ?;", newAgent);
 
-                        if (row === undefined) {
+                        if (await db.fetchOne("SELECT 1 FROM agent WHERE name = ?;", newAgent) === undefined) {
                             await db.runSql(
-                                "INSERT INTO agent(name, csr_chksum_algo, csr_chksum, status) VALUES (?, ?, ?, 0);",
+                                "INSERT INTO agent(name, csr_chksum_algo, csr_chksum) VALUES (?, ?, ?);",
                                 newAgent,
                                 req.body.algo,
                                 req.body.checksum
                             );
 
-                            status = 202;
-
                             this.emit("agent", newAgent);
-                        } else {
-                            status = row.status ? 201 : 202;
                         }
                     });
 
-                    res.status(status).end();
+                    res.status(202).end();
                 })
             );
     }
