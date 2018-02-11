@@ -146,16 +146,16 @@ module.exports = class extends Service(EventEmitter) {
                     await db.doTask(async () => {
                         let newAgent = req.params.agent;
 
-                        if (await db.fetchOne("SELECT 1 FROM agent WHERE name = ?;", newAgent) === undefined) {
-                            await db.runSql(
-                                "INSERT INTO agent(name, csr_chksum_algo, csr_chksum) VALUES (?, ?, ?);",
-                                newAgent,
-                                req.body.algo,
-                                req.body.checksum
-                            );
+                        await db.runSql(
+                            await db.fetchOne("SELECT 1 FROM agent WHERE name = ?;", newAgent) === undefined
+                                ? "INSERT INTO agent(csr_chksum_algo, csr_chksum, name) VALUES (?, ?, ?);"
+                                : "UPDATE agent SET csr_chksum_algo = ?, csr_chksum = ? WHERE name = ?",
+                            req.body.algo,
+                            req.body.checksum,
+                            newAgent
+                        );
 
-                            this.emit("agent", newAgent);
-                        }
+                        this.emit("agent", newAgent);
                     });
 
                     res.status(202).end();
