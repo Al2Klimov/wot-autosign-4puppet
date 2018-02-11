@@ -7,6 +7,7 @@ const Db = require("../Db");
 const DirectoryFeed = require("../DirectoryFeed");
 const HTTPd = require("./HTTPd");
 const Logger = require("../../Logger");
+const {crypto: {pem2der}} = require("../../util/misc");
 const {join} = require("path");
 const MultiMutex = require("../../concurrency/MultiMutex");
 const {fs: {readFile, unlink}} = require("../../util/promisified");
@@ -22,8 +23,7 @@ const {
 } = require("../../util/misc");
 
 
-const csrFile = /^(.+)\.pem$/i, crLf = /[\r\n]/;
-const csrStart = /-+BEGIN CERTIFICATE REQUEST-+/, csrEnd = /-+END CERTIFICATE REQUEST-+/;
+const csrFile = /^(.+)\.pem$/i;
 
 module.exports = class extends Service() {
     constructor(config, puppetConfig) {
@@ -114,29 +114,14 @@ module.exports = class extends Service() {
             return;
         }
 
-        let lines = csr.split(crLf), start = -1, end = -1, i = 0;
+        let der = pem2der(csr);
 
-        for (let line of lines) {
-            if (start === -1) {
-                if (csrStart.exec(line) !== null) {
-                    start = i + 1;
-                }
-            } else if (csrEnd.exec(line) !== null) {
-                end = i;
-                break;
-            }
-
-            ++i;
-        }
-
-        if (end === -1) {
+        if (der === null) {
             this.timer.setTimeout(this.onNewAgent.bind(this), 1000, agent);
             return;
         }
 
-        let csrChksum = createHash(row.csr_chksum_algo)
-            .update(new Buffer(lines.slice(start, end).map(s => s.trim()).join(""), "base64"))
-            .digest("hex");
+        let csrChksum = createHash(row.csr_chksum_algo).update(der).digest("hex");
 
         if (row.csr_chksum === csrChksum) {
             await wait(spawn("puppet", ["cert", "sign", agent]));

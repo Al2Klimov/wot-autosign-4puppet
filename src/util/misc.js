@@ -30,6 +30,31 @@ module.exports = {
         })
     },
 
+    crypto: {
+        pem2der: (() => {
+            const crLf = /[\r\n]/, csrStart = /-+BEGIN [^-]+-+/, csrEnd = /-+END [^-]+-+/;
+
+            return pem => {
+                let lines = pem.split(crLf), start = -1, end = -1, i = 0;
+
+                for (let line of lines) {
+                    if (start === -1) {
+                        if (csrStart.exec(line) !== null) {
+                            start = i + 1;
+                        }
+                    } else if (csrEnd.exec(line) !== null) {
+                        end = i;
+                        break;
+                    }
+
+                    ++i;
+                }
+
+                return end === -1 ? null : new Buffer(lines.slice(start, end).map(s => s.trim()).join(""), "base64");
+            };
+        })()
+    },
+
     fs: {
         readFile: (() => {
             let fsReadFileLimiter = new Semaphore(64);
