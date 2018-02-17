@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "lib": ["es2015"],
+    "allowJs": true,
+    "outDir": "./build",
+    "strict": true,
+    "moduleResolution": "node"
+  },
+  "include": ["./src/**/*.ts", "./src/**/*.js"]
+}
