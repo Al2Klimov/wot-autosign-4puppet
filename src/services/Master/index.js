@@ -11,7 +11,6 @@ const {crypto: {pem2der}} = require("../../util/misc");
 const {join} = require("path");
 const MultiMutex = require("../../concurrency/MultiMutex");
 const {fs: {readFile, unlink}} = require("../../util/promisified");
-const Service = require("../Service");
 const Services = require("../Services");
 const TaskExecutor = require("../TaskExecutor");
 const Timer = require("../Timer");
@@ -25,15 +24,13 @@ const {
 
 const csrFile = /^(.+)\.pem$/i;
 
-module.exports = class extends Service() {
+module.exports = class {
     constructor(config, puppetConfig) {
         let missing = ["csrdir"].filter(key => !puppetConfig.has(key));
 
         if (missing.length) {
             throw new Error("Missing Puppet config directives: " + JSON.stringify(missing).replace(/[[\]]/, ""));
         }
-
-        super();
 
         let logger = new Logger(config.logging.level);
 

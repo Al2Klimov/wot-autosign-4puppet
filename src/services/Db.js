@@ -4,7 +4,6 @@
 const Mutex = require("../concurrency/Mutex");
 const {join} = require("path");
 const {sqlite3: {Database: {new: newDb}}} = require("../util/sc");
-const Service = require("./Service");
 const {OPEN_READWRITE} = require("sqlite3");
 
 const {
@@ -13,10 +12,8 @@ const {
 } = require("../util/promisified");
 
 
-module.exports = class extends Service() {
+module.exports = class {
     constructor(path, schema) {
-        super();
-
         this.path = path;
         this.schema = schema;
         this.lock = new Mutex;

@@ -10,7 +10,6 @@ const {createServer} = require("https");
 const {Validator} = require("jsonschema");
 const Mutex = require("../../concurrency/Mutex");
 const {net: {Server: {listen}}} = require("../../util/sc");
-const Service = require("../Service");
 const {agentNames2Filter} = require("./util");
 
 const {
@@ -20,7 +19,7 @@ const {
 } = require("../../util/misc");
 
 
-module.exports = class extends Service(EventEmitter) {
+module.exports = class extends EventEmitter {
     constructor(config, puppetConfig, db) {
         super();
 

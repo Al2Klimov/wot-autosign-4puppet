@@ -3,10 +3,9 @@
 
 const {EventEmitter} = require("events");
 const Mutex = require("../concurrency/Mutex");
-const Service = require("./Service");
 
 
-module.exports = class extends Service(EventEmitter) {
+module.exports = class extends EventEmitter {
     constructor() {
         super();
 

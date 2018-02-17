@@ -3,13 +3,10 @@
 
 const Mutex = require("../concurrency/Mutex");
 const RingLinkedList = require("../util/RingLinkedList");
-const Service = require("./Service");
 
 
-module.exports = class extends Service() {
+module.exports = class {
     constructor() {
-        super();
-
         this.pendingTimers = null;
         this.stateChangeMutex = new Mutex();
     }

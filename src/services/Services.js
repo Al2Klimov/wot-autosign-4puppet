@@ -3,13 +3,10 @@
 
 const Mutex = require("../concurrency/Mutex");
 const {Promise: {all}} = require("../util/misc");
-const Service = require("./Service");
 
 
-module.exports = class extends Service() {
+module.exports = class {
     constructor(services, dependencies) {
-        super();
-
         this.services = services;
         this.dependencies = dependencies || {};
         this.reverseDependencies = {};

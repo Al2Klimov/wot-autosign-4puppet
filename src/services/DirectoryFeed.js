@@ -5,10 +5,9 @@ const {EventEmitter} = require("events");
 const {watch} = require("fs");
 const Mutex = require("../concurrency/Mutex");
 const {fs: {readdir}} = require("../util/promisified");
-const Service = require("./Service");
 
 
-module.exports = class extends Service(EventEmitter) {
+module.exports = class extends EventEmitter {
     constructor(dir) {
         super();
 
