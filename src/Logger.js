@@ -20,7 +20,7 @@ module.exports = class {
                 message = message();
             }
 
-            if (typeof message === "object") {
+            if (typeof message === "object" && ! (message instanceof Error)) {
                 message = message.toString();
             }
 
