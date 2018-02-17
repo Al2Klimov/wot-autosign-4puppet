@@ -1,7 +1,7 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const Mutex = require("../concurrency/Mutex");
+const {Mutex} = require("../concurrency/Mutex");
 const {join} = require("path");
 const {sqlite3: {Database: {new: newDb}}} = require("../util/sc");
 const {OPEN_READWRITE} = require("sqlite3");

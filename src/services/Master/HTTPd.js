@@ -8,7 +8,7 @@ const {https: {Server: {close: httpsServerClose}}} = require("../../util/promisi
 const {hidePoweredBy, noCache} = require("helmet");
 const {createServer} = require("https");
 const {Validator} = require("jsonschema");
-const Mutex = require("../../concurrency/Mutex");
+const {Mutex} = require("../../concurrency/Mutex");
 const {net: {Server: {listen}}} = require("../../util/sc");
 const {agentNames2Filter} = require("./util");
 

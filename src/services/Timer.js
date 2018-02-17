@@ -1,7 +1,7 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const Mutex = require("../concurrency/Mutex");
+const {Mutex} = require("../concurrency/Mutex");
 const RingLinkedList = require("../util/RingLinkedList");
 
 

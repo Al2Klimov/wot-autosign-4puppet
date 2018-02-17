@@ -2,7 +2,7 @@
 
 
 const {EventEmitter} = require("events");
-const Mutex = require("../concurrency/Mutex");
+const {Mutex} = require("../concurrency/Mutex");
 
 
 module.exports = class extends EventEmitter {

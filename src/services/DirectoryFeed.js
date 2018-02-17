@@ -3,7 +3,7 @@
 
 const {EventEmitter} = require("events");
 const {watch} = require("fs");
-const Mutex = require("../concurrency/Mutex");
+const {Mutex} = require("../concurrency/Mutex");
 const {fs: {readdir}} = require("../util/promisified");
 
 
