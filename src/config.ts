@@ -11,6 +11,26 @@ const {all} = promise;
 const {readFile} = fs;
 
 
+type AgentNames = string[] | string;
+
+export interface MasterConfig {
+    listen: {
+        address: string;
+        port: number;
+    }[];
+
+    web_of_trust: {
+        trustee: AgentNames;
+        responsible: AgentNames;
+    }[];
+
+    logging: {
+        level: "critical" | "error" | "warning" | "info" | "debug";
+    };
+
+    datadir: string;
+}
+
 let configValidator = new Validator();
 
 let port = {
