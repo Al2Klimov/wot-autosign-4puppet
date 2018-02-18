@@ -1,7 +1,7 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const Agent = require("./services/Agent");
+const {Agent} = require("./services/Agent");
 const {load: config} = require("./config");
 const {Logger} = require("./Logger");
 const Master = require("./services/Master");
