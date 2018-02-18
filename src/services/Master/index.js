@@ -134,7 +134,7 @@ module.exports = class extends Service() {
         let csrFile = join(this.csrdir, agent + ".pem"), csr = undefined;
 
         try {
-            csr = await readFile(csrFile);
+            csr = await readFile(csrFile, "utf8");
         } catch (e) {
             if (typeof e.code === "undefined" || e.code !== "ENOENT") {
                 throw e;
