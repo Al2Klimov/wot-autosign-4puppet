@@ -3,11 +3,11 @@
     "target": "es5",
     "module": "commonjs",
     "lib": ["es2015"],
-    "allowJs": true,
+    "allowJs": false,
     "outDir": "./build",
     "strict": true,
     "downlevelIteration": true,
     "moduleResolution": "node"
   },
-  "include": ["./src/**/*.ts", "./src/**/*.js"]
+  "include": ["./src/**/*.ts"]
 }
