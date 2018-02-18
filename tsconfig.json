@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "lib": ["es2015"],
+    "allowJs": false,
+    "outDir": "./build",
+    "strict": true,
+    "downlevelIteration": true,
+    "moduleResolution": "node"
+  },
+  "include": ["./src/**/*.ts"]
+}

@@ -1,30 +1,33 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const Mutex = require("../concurrency/Mutex");
-const {join} = require("path");
-const {sqlite3: {Database: {new: newDb}}} = require("../util/sc");
-const Service = require("./Service");
-const {OPEN_READWRITE} = require("sqlite3");
+import {Mutex} from "../concurrency/Mutex";
+import {join} from "path";
+import {fs, sqlite3 as promisifiedSqlite3} from "../util/promisified";
+import {sqlite3 as scSqlite3} from "../util/sc";
+import {Database, OPEN_CREATE, OPEN_READWRITE} from "sqlite3";
+import {Service} from "./Service";
 
-const {
-    fs: {mkdtemp, rename, rmdir, stat, unlink},
-    sqlite3: {Database: {close: closeDb, get: fetchOne, run: runSql}}
-} = require("../util/promisified");
+const {Database: {new: newDb}} = scSqlite3;
+const {mkdtemp, rename, rmdir, stat, unlink} = fs;
+const {Database: {close: closeDb, get: fetchOne, run: runSql}} = promisifiedSqlite3;
 
 
-module.exports = class extends Service() {
-    constructor(path, schema) {
-        super();
+export class Db implements Service {
+    private path: string;
+    private schema: string[];
+    private lock: Mutex;
+    private connection: Database | null;
 
+    public constructor(path: string, schema: string[]) {
         this.path = path;
         this.schema = schema;
         this.lock = new Mutex;
         this.connection = null;
     }
 
-    start() {
-        return this.lock.enqueue(async () => {
+    public start(): Promise<void> {
+        return this.lock.enqueue(async (): Promise<void> => {
             if (this.connection === null) {
                 try {
                     await stat(this.path);
@@ -34,7 +37,7 @@ module.exports = class extends Service() {
 
                         try {
                             let tmpDb = join(tmpDir, "db.sqlite3");
-                            let conn = await newDb(tmpDb);
+                            let conn = await newDb(tmpDb, OPEN_CREATE);
 
                             try {
                                 try {
@@ -63,8 +66,8 @@ module.exports = class extends Service() {
         });
     }
 
-    stop() {
-        return this.lock.enqueue(async () => {
+    public stop(): Promise<void> {
+        return this.lock.enqueue(async (): Promise<void> => {
             if (this.connection !== null) {
                 try {
                     await closeDb.call(this.connection);
@@ -75,15 +78,15 @@ module.exports = class extends Service() {
         });
     }
 
-    doTask(task) {
+    public doTask<T>(task: () => Promise<T>): Promise<T> {
         return this.lock.enqueue(task);
     }
 
-    fetchOne(sql, ...params) {
+    public fetchOne<T>(sql: string, ...params: any[]): Promise<T | undefined> {
         return fetchOne.call(this.connection, sql, ...params);
     }
 
-    runSql(sql, ...params) {
+    public runSql<T>(sql: string, ...params: any[]): Promise<T> {
         return runSql.call(this.connection, sql, ...params);
     }
-};
+}

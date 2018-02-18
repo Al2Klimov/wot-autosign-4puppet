@@ -1,27 +1,44 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const {json: bodyParser} = require("body-parser");
-const {EventEmitter} = require("events");
-const express = require("express");
-const {https: {Server: {close: httpsServerClose}}} = require("../../util/promisified");
-const {hidePoweredBy, noCache} = require("helmet");
-const {createServer} = require("https");
-const {Validator} = require("jsonschema");
-const Mutex = require("../../concurrency/Mutex");
-const {net: {Server: {listen}}} = require("../../util/sc");
-const Service = require("../Service");
-const {agentNames2Filter} = require("./util");
+import {json as bodyParser} from "body-parser";
+import {MasterConfig} from "../../config";
+import {Db} from "../Db";
+import {EventEmitter} from "events";
+import * as express from "express";
+import {Application, Request, Response} from "express";
+import {https} from "../../util/promisified";
+import {hidePoweredBy, noCache} from "helmet";
+import {createServer, Server} from "https";
+import {Validator} from "jsonschema";
+import {fs, middleware, promise} from "../../util/misc";
+import {Mutex} from "../../concurrency/Mutex";
+import {net} from "../../util/sc";
+import {Service} from "../Service";
+import {TLSSocket} from "tls";
+import {agentNames2Filter} from "./util";
 
-const {
-    fs: {readFile},
-    middleware: {fromPromiseFactory, handleErrors},
-    Promise: {all}
-} = require("../../util/misc");
+const {readFile} = fs;
+const {Server: {close: httpsServerClose}} = https;
+const {fromPromiseFactory, handleErrors} = middleware;
+const {Server: {listen}} = net;
+const {all} = promise;
 
 
-module.exports = class extends Service(EventEmitter) {
-    constructor(config, puppetConfig, db) {
+interface Trust {
+    trustee: (agentName: string) => boolean;
+    responsible: (agentName: string) => boolean;
+}
+
+export class HTTPd extends EventEmitter implements Service {
+    private config: MasterConfig;
+    private puppetConfig: Map<string, string>;
+    private db: Db;
+    private server: Server | null;
+    private stateChangeMutex: Mutex;
+    private webOfTrust: Trust[];
+
+    public constructor(config: MasterConfig, puppetConfig: Map<string, string>, db: Db) {
         super();
 
         this.config = config;
@@ -29,29 +46,34 @@ module.exports = class extends Service(EventEmitter) {
         this.db = db;
         this.server = null;
         this.stateChangeMutex = new Mutex();
+        this.webOfTrust = [];
 
-        let missing = ["hostcert", "hostprivkey", "cacert", "cacrl"].filter(key => !puppetConfig.has(key));
+        let missing = ["hostcert", "hostprivkey", "cacert", "cacrl"].filter(
+            (key: string): boolean => !puppetConfig.has(key)
+        );
 
         if (missing.length) {
             throw new Error("Missing Puppet config directives: " + JSON.stringify(missing).replace(/[[\]]/, ""));
         }
 
         for (let wot of config.web_of_trust) {
-            wot.trustee = agentNames2Filter(wot.trustee);
-            wot.responsible = agentNames2Filter(wot.responsible);
+            this.webOfTrust.push({
+                trustee: agentNames2Filter(wot.trustee),
+                responsible: agentNames2Filter(wot.responsible)
+            });
         }
     }
 
-    start() {
-        return this.stateChangeMutex.enqueue(async () => {
+    public start(): Promise<void> {
+        return this.stateChangeMutex.enqueue(async (): Promise<void> => {
             if (this.server === null) {
                 let [hostcert, hostprivkey, cacert, cacrl] = await all(
                     ["hostcert", "hostprivkey", "cacert", "cacrl"].map(
-                        key => readFile(this.puppetConfig.get(key), "utf8")
+                        (key: string): Promise<string> => readFile(this.puppetConfig.get(key) as string, "utf8")
                     )
                 );
 
-                let onError = (err, req, res, next) => {
+                let onError = (err: Error, req: Request, res: Response, next: (...args: any[]) => void): void => {
                     this.emit("error", err);
                 };
 
@@ -85,8 +107,8 @@ module.exports = class extends Service(EventEmitter) {
         });
     }
 
-    stop() {
-        return this.stateChangeMutex.enqueue(async () => {
+    public stop(): Promise<void> {
+        return this.stateChangeMutex.enqueue(async (): Promise<void> => {
             if (this.server !== null) {
                 await httpsServerClose.bind(this.server)();
                 this.server = null;
@@ -94,7 +116,7 @@ module.exports = class extends Service(EventEmitter) {
         });
     }
 
-    express(onError) {
+    private express(onError: (err: Error, req: Request, res: Response, next: (...args: any[]) => void) => void): Application {
         let emptyObjectJson = JSON.stringify({});
         let requestValidator = new Validator();
 
@@ -126,12 +148,12 @@ module.exports = class extends Service(EventEmitter) {
             .put(
                 "/agent/:agent",
                 noCache(),
-                (req, res, next) => {
-                    let cn = req.socket.getPeerCertificate(false).subject.CN;
-                    let newAgent = req.params.agent;
+                (req: Request, res: Response, next: (...args: any[]) => void): void => {
+                    let cn = (req.socket as TLSSocket).getPeerCertificate(false).subject.CN;
+                    let newAgent = req.params.agent as string;
 
-                    if (this.config.web_of_trust.filter(
-                        wot => wot.trustee(cn) && wot.responsible(newAgent)
+                    if (this.webOfTrust.filter(
+                        (wot: Trust): boolean => wot.trustee(cn) && wot.responsible(newAgent)
                     ).length) {
                         if (requestValidator.validate(newAgent, idnHostname).errors.length) {
                             res.status(400).end();
@@ -142,10 +164,10 @@ module.exports = class extends Service(EventEmitter) {
                         res.status(403).end();
                     }
                 },
-                handleErrors(bodyParser(), (err, req, res) => {
+                handleErrors(bodyParser(), (err: Error, req: Request, res: Response): void => {
                     res.status(400).end();
                 }),
-                fromPromiseFactory(async (req, res) => {
+                fromPromiseFactory(async (req: Request, res: Response) => {
                     if (JSON.stringify(req.body) === emptyObjectJson
                         || requestValidator.validate(req.body, schema).errors.length) {
                         res.status(400).end();
@@ -154,11 +176,11 @@ module.exports = class extends Service(EventEmitter) {
 
                     let db = this.db;
 
-                    await db.doTask(async () => {
+                    await db.doTask(async (): Promise<void> => {
                         let newAgent = req.params.agent;
 
                         await db.runSql(
-                            await db.fetchOne("SELECT 1 FROM agent WHERE name = ?;", newAgent) === undefined
+                            await db.fetchOne<Object>("SELECT 1 FROM agent WHERE name = ?;", newAgent) === undefined
                                 ? "INSERT INTO agent(csr_chksum_algo, csr_chksum, name) VALUES (?, ?, ?);"
                                 : "UPDATE agent SET csr_chksum_algo = ?, csr_chksum = ? WHERE name = ?",
                             req.body.algo,
@@ -174,4 +196,4 @@ module.exports = class extends Service(EventEmitter) {
             )
             .use(onError);
     }
-};
+}

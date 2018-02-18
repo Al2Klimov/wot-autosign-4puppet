@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "description": "Automatically signs Puppet(R) agent CSRs based on a web of trust",
   "bin": {
-    "wot-autosign-4puppet": "./src/daemon.js"
+    "wot-autosign-4puppet": "./build/daemon.js"
   },
   "scripts": {
+    "prepare": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -37,5 +38,14 @@
     "helmet": "^3.9.0",
     "jsonschema": "^1.2.2",
     "sqlite3": "^3.1.13"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.16.8",
+    "@types/express": "^4.11.1",
+    "@types/helmet": "0.0.37",
+    "@types/jsonschema": "^1.1.1",
+    "@types/node": "^9.4.6",
+    "@types/sqlite3": "^3.1.1",
+    "typescript": "^2.6.2"
   }
 }
