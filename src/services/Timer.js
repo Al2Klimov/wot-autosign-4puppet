@@ -2,7 +2,7 @@
 
 
 const {Mutex} = require("../concurrency/Mutex");
-const RingLinkedList = require("../util/RingLinkedList");
+const {RingLinkedList} = require("../util/RingLinkedList");
 
 
 module.exports = class {
