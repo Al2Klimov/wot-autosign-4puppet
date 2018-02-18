@@ -10,7 +10,7 @@ import {HTTPd} from "./HTTPd";
 import {Logger} from "../../Logger";
 import {child_process, crypto, promise} from "../../util/misc";
 import {join} from "path";
-import {MultiMutex} from "../../concurrency/MultiMutex";
+import {MultiMutex} from "../../util/concurrency";
 import {fs} from "../../util/promisified";
 import {Service} from "../Service";
 import {Services} from "../Services";

@@ -2,7 +2,7 @@
 
 
 import {EventEmitter} from "events";
-import {Mutex} from "../concurrency/Mutex";
+import {Mutex} from "../util/concurrency";
 import {Service} from "./Service";
 
 

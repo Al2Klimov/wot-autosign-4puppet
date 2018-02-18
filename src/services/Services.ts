@@ -2,7 +2,7 @@
 
 
 import {promise} from "../util/misc";
-import {Mutex} from "../concurrency/Mutex";
+import {Mutex} from "../util/concurrency";
 import {Service} from "./Service";
 
 const {all} = promise;

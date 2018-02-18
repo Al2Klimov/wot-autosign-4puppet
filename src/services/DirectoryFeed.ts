@@ -3,7 +3,7 @@
 
 import {EventEmitter} from "events";
 import {FSWatcher, watch} from "fs";
-import {Mutex} from "../concurrency/Mutex";
+import {Mutex} from "../util/concurrency";
 import {fs} from "../util/promisified";
 import {Service} from "./Service";
 

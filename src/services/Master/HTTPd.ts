@@ -12,7 +12,7 @@ import {hidePoweredBy, noCache} from "helmet";
 import {createServer, Server} from "https";
 import {Validator} from "jsonschema";
 import {fs, middleware, promise} from "../../util/misc";
-import {Mutex} from "../../concurrency/Mutex";
+import {Mutex} from "../../util/concurrency";
 import {net} from "../../util/sc";
 import {Service} from "../Service";
 import {TLSSocket} from "tls";

@@ -4,7 +4,7 @@
 import {ChildProcess} from "child_process";
 import {EventEmitter} from "events";
 import {fs as promisifiedFs} from "./promisified";
-import {Semaphore} from "../concurrency/Semaphore";
+import {Semaphore} from "../util/concurrency";
 import {Readable} from "stream";
 
 

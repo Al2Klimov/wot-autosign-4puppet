@@ -1,7 +1,7 @@
 // For the terms of use see COPYRIGHT.md
 
 
-import {Mutex} from "../concurrency/Mutex";
+import {Mutex} from "../util/concurrency";
 import {RingLinkedList} from "../util/RingLinkedList";
 import {Service} from "./Service";
 

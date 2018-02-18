@@ -1,7 +1,7 @@
 // For the terms of use see COPYRIGHT.md
 
 
-import {Mutex} from "../concurrency/Mutex";
+import {Mutex} from "../util/concurrency";
 import {join} from "path";
 import {fs, sqlite3 as promisifiedSqlite3} from "../util/promisified";
 import {sqlite3 as scSqlite3} from "../util/sc";
