@@ -97,7 +97,7 @@ export class HTTPd extends EventEmitter implements Service {
                     await all(this.config.listen.map(ep => listenEP(ep.port, ep.address)));
                 } catch (e) {
                     if (this.server.listening) {
-                        await httpsServerClose.bind(this.server)();
+                        await httpsServerClose.call(this.server);
                     }
 
                     this.server = null;
@@ -110,7 +110,7 @@ export class HTTPd extends EventEmitter implements Service {
     public stop(): Promise<void> {
         return this.stateChangeMutex.enqueue(async (): Promise<void> => {
             if (this.server !== null) {
-                await httpsServerClose.bind(this.server)();
+                await httpsServerClose.call(this.server);
                 this.server = null;
             }
         });
