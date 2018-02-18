@@ -4,7 +4,7 @@
 const {Agent} = require("./services/Agent");
 const {load: config} = require("./config");
 const {Logger} = require("./Logger");
-const Master = require("./services/Master");
+const {Master} = require("./services/Master");
 const {config: {print: puppet}} = require("./puppet");
 const {Services} = require("./services/Services");
 

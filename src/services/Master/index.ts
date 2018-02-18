@@ -1,32 +1,47 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const {spawn} = require("child_process");
-const {createHash} = require("crypto");
-const {Db} = require("../Db");
-const {DirectoryFeed} = require("../DirectoryFeed");
-const {HTTPd} = require("./HTTPd");
-const {Logger} = require("../../Logger");
-const {crypto: {pem2der}} = require("../../util/misc");
-const {join} = require("path");
-const {MultiMutex} = require("../../concurrency/MultiMutex");
-const {fs: {readFile, unlink}} = require("../../util/promisified");
-const {Services} = require("../Services");
-const {TaskExecutor} = require("../TaskExecutor");
-const {Timer} = require("../Timer");
-const {agentNames2Filter} = require("./util");
+import {spawn} from "child_process";
+import {MasterConfig} from "../../config";
+import {createHash} from "crypto";
+import {Db} from "../Db";
+import {DirectoryFeed} from "../DirectoryFeed";
+import {HTTPd} from "./HTTPd";
+import {Logger} from "../../Logger";
+import {child_process, crypto, promise} from "../../util/misc";
+import {join} from "path";
+import {MultiMutex} from "../../concurrency/MultiMutex";
+import {fs} from "../../util/promisified";
+import {Service} from "../Service";
+import {Services} from "../Services";
+import {TaskExecutor} from "../TaskExecutor";
+import {Timer} from "../Timer";
+import {agentNames2Filter} from "./util";
 
-const {
-    child_process: {wait},
-    promise: {all}
-} = require("../../util/misc");
+const {wait} = child_process;
+const {pem2der} = crypto;
+const {readFile, unlink} = fs;
+const {all} = promise;
 
+
+interface AgentRow {
+    csr_chksum_algo: string;
+    csr_chksum: string;
+}
 
 const csrFile = /^(.+)\.pem$/i;
 
-module.exports = class {
-    constructor(config, puppetConfig) {
-        let missing = ["csrdir"].filter(key => !puppetConfig.has(key));
+export class Master implements Service {
+    private csrdir: string;
+    private taskExecutor: TaskExecutor;
+    private timer: Timer;
+    private responsible: ((agentName: string) => boolean)[];
+    private agentsLocks: MultiMutex;
+    private db: Db;
+    private services: Services;
+
+    public constructor(config: MasterConfig, puppetConfig: Map<string, string>) {
+        let missing = ["csrdir"].filter((key: string): boolean => !puppetConfig.has(key));
 
         if (missing.length) {
             throw new Error("Missing Puppet config directives: " + JSON.stringify(missing).replace(/[[\]]/, ""));
@@ -34,11 +49,11 @@ module.exports = class {
 
         let logger = new Logger(config.logging.level);
 
-        let onError = error => {
+        let onError = (error: Error): void => {
             logger.error(error)
         };
 
-        this.csrdir = puppetConfig.get("csrdir");
+        this.csrdir = puppetConfig.get("csrdir") as string;
         this.taskExecutor = (new TaskExecutor()).on("error", onError);
         this.timer = new Timer();
         this.responsible = config.web_of_trust.map(wot => agentNames2Filter(wot.responsible));
@@ -69,15 +84,15 @@ module.exports = class {
         );
     }
 
-    start() {
+    public start(): Promise<void> {
         return this.services.start();
     }
 
-    stop() {
+    public stop(): Promise<void> {
         return this.services.stop();
     }
 
-    onCsrDirChange(filename) {
+    private onCsrDirChange(filename: string): void {
         let m = csrFile.exec(filename);
 
         if (m === null) {
@@ -100,12 +115,16 @@ module.exports = class {
         this.onNewAgent(cn);
     }
 
-    onNewAgent(newAgent) {
-        this.taskExecutor.run(() => this.agentsLocks.enqueue(newAgent, () => this.trySign(newAgent)));
+    private onNewAgent(newAgent: string): void {
+        this.taskExecutor.run(
+            (): Promise<void> => this.agentsLocks.enqueue(newAgent, (): Promise<void> => this.trySign(newAgent))
+        );
     }
 
-    async trySign(agent) {
-        let [row, [csrFile, csr]] = await all([this.getAgentRow(agent), this.readCsrFile(agent)]);
+    private async trySign(agent: string): Promise<void> {
+        let [row, [csrFile, csr]] = await (all<any>([
+            this.getAgentRow(agent), this.readCsrFile(agent)
+        ]) as Promise<[AgentRow | undefined, [string, string | undefined]]>);
 
         if (row === undefined || csr === undefined) {
             return;
@@ -118,17 +137,17 @@ module.exports = class {
             return;
         }
 
-        let csrChksum = createHash(row.csr_chksum_algo).update(der).digest("hex");
+        let csrChksum = createHash((row as AgentRow).csr_chksum_algo).update(der).digest("hex");
 
-        if (row.csr_chksum === csrChksum) {
+        if ((row as AgentRow).csr_chksum === csrChksum) {
             await wait(spawn("puppet", ["cert", "sign", agent]));
         } else {
             await unlink(csrFile);
         }
     }
 
-    async readCsrFile(agent) {
-        let csrFile = join(this.csrdir, agent + ".pem"), csr = undefined;
+    private async readCsrFile(agent: string): Promise<[string, string | undefined]> {
+        let csrFile = join(this.csrdir, agent + ".pem"), csr: string | undefined = undefined;
 
         try {
             csr = await readFile(csrFile, "utf8");
@@ -141,9 +160,11 @@ module.exports = class {
         return [csrFile, csr];
     }
 
-    getAgentRow(agent) {
+    private getAgentRow(agent: string): Promise<AgentRow | undefined> {
         let db = this.db;
 
-        return db.doTask(() => db.fetchOne("SELECT csr_chksum_algo, csr_chksum FROM agent WHERE name = ?;", agent));
+        return db.doTask(
+            (): Promise<AgentRow | undefined> => db.fetchOne("SELECT csr_chksum_algo, csr_chksum FROM agent WHERE name = ?;", agent)
+        );
     }
-};
+}
