@@ -1,26 +1,30 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const {Mutex} = require("../concurrency/Mutex");
-const {RingLinkedList} = require("../util/RingLinkedList");
+import {Mutex} from "../concurrency/Mutex";
+import {RingLinkedList} from "../util/RingLinkedList";
+import {Service} from "./Service";
 
 
-module.exports = class {
-    constructor() {
+export class Timer implements Service {
+    private pendingTimers: RingLinkedList<NodeJS.Timer> | null;
+    private stateChangeMutex: Mutex;
+
+    public constructor() {
         this.pendingTimers = null;
         this.stateChangeMutex = new Mutex();
     }
 
-    start() {
-        return this.stateChangeMutex.enqueue(async () => {
+    public start(): Promise<void> {
+        return this.stateChangeMutex.enqueue(async (): Promise<void> => {
             if (this.pendingTimers === null) {
-                this.pendingTimers = new RingLinkedList;
+                this.pendingTimers = new RingLinkedList<NodeJS.Timer>();
             }
         });
     }
 
-    stop() {
-        return this.stateChangeMutex.enqueue(async () => {
+    public stop(): Promise<void> {
+        return this.stateChangeMutex.enqueue(async (): Promise<void> => {
             if (this.pendingTimers !== null) {
                 for (let pendingTimer of this.pendingTimers.iter()) {
                     clearTimeout(pendingTimer.value);
@@ -31,10 +35,10 @@ module.exports = class {
         });
     }
 
-    setTimeout(f, delay, ...args) {
+    public setTimeout(f: (...args: any[]) => void, delay: number, ...args: any[]) {
         if (this.pendingTimers !== null) {
             let pendingTimer = this.pendingTimers.append(setTimeout(
-                () => {
+                (): void => {
                     pendingTimer.detach();
                     f(...args);
                 },
@@ -42,4 +46,4 @@ module.exports = class {
             ));
         }
     }
-};
+}

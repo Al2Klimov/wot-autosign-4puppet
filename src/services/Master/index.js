@@ -13,7 +13,7 @@ const {MultiMutex} = require("../../concurrency/MultiMutex");
 const {fs: {readFile, unlink}} = require("../../util/promisified");
 const Services = require("../Services");
 const TaskExecutor = require("../TaskExecutor");
-const Timer = require("../Timer");
+const {Timer} = require("../Timer");
 const {agentNames2Filter} = require("./util");
 
 const {
