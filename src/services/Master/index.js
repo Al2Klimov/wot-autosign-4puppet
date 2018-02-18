@@ -4,7 +4,7 @@
 const {spawn} = require("child_process");
 const {createHash} = require("crypto");
 const Db = require("../Db");
-const DirectoryFeed = require("../DirectoryFeed");
+const {DirectoryFeed} = require("../DirectoryFeed");
 const HTTPd = require("./HTTPd");
 const {Logger} = require("../../Logger");
 const {crypto: {pem2der}} = require("../../util/misc");

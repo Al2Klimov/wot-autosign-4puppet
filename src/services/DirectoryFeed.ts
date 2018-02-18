@@ -1,14 +1,22 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const {EventEmitter} = require("events");
-const {watch} = require("fs");
-const {Mutex} = require("../concurrency/Mutex");
-const {fs: {readdir}} = require("../util/promisified");
+import {EventEmitter} from "events";
+import {FSWatcher, watch} from "fs";
+import {Mutex} from "../concurrency/Mutex";
+import {fs} from "../util/promisified";
+import {Service} from "./Service";
+
+const {readdir} = fs;
 
 
-module.exports = class extends EventEmitter {
-    constructor(dir) {
+export class DirectoryFeed extends EventEmitter implements Service {
+    private dir: string;
+    private stateChangeMutex: Mutex;
+    private watcher: FSWatcher | null;
+    private listing: Promise<void> | null;
+
+    public constructor(dir: string) {
         super();
 
         this.dir = dir;
@@ -17,16 +25,16 @@ module.exports = class extends EventEmitter {
         this.listing = null;
     }
 
-    start() {
-        return this.stateChangeMutex.enqueue(async () => {
+    public start(): Promise<void> {
+        return this.stateChangeMutex.enqueue(async (): Promise<void> => {
             if (this.watcher === null) {
-                this.watcher = watch(this.dir, (eventType, filename) => {
+                this.watcher = watch(this.dir, (eventType: string, filename: string): void => {
                     this.emit("change", filename);
-                }).on("error", reason => {
+                }).on("error", (reason: Error): void => {
                     this.emit("error", reason);
                 });
 
-                this.listing = (async () => {
+                this.listing = (async (): Promise<void> => {
                     try {
                         for (let filename of await readdir(this.dir)) {
                             this.emit("change", filename);
@@ -39,7 +47,7 @@ module.exports = class extends EventEmitter {
         });
     }
 
-    stop() {
+    public stop(): Promise<void> {
         return this.stateChangeMutex.enqueue(async () => {
             if (this.watcher !== null) {
                 await this.listing;
@@ -53,4 +61,4 @@ module.exports = class extends EventEmitter {
             }
         });
     }
-};
+}
