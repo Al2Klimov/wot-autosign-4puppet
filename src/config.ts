@@ -1,14 +1,14 @@
 // For the terms of use see COPYRIGHT.md
 
 
-const {fs: {readdir, stat}} = require("./util/promisified");
-const {Validator} = require("jsonschema");
-const {join} = require("path");
+import {Validator} from "jsonschema";
+import {fs, promise} from "./util/misc";
+import {join} from "path";
+import {fs as promisifiedFs} from "./util/promisified";
 
-const {
-    fs: {readFile},
-    promise: {all}
-} = require("./util/misc");
+const {readdir, stat} = promisifiedFs;
+const {all} = promise;
+const {readFile} = fs;
 
 
 let configValidator = new Validator();
@@ -89,8 +89,15 @@ let schema = {
 
 let jsonFile = /.\.json$/i;
 
-exports.load = async paths => {
-    let readings = [];
+interface Reading {
+    path: string;
+    reading?: Promise<string>;
+    content?: string;
+    parsed?: Object;
+}
+
+export async function load(paths: string[]): Promise<Object[]> {
+    let readings: Reading[] = [];
 
     await collectReadings(paths, readings, 0);
 
@@ -101,7 +108,7 @@ exports.load = async paths => {
 
     for (let reading of readings) {
         try {
-            reading.parsed = JSON.parse(reading.content)
+            reading.parsed = JSON.parse(reading.content as string)
         } catch (e) {
             throw new Error("Invalid JSON in " + JSON.stringify(reading.path));
         }
@@ -112,15 +119,15 @@ exports.load = async paths => {
     for (let reading of readings) {
         configValidator.validate(reading.parsed, schema, {
             propertyName: "JSON.parse(fs.readFileSync(" + JSON.stringify(reading.path) + ', "utf8"))'
-        }).errors.forEach(e => {
+        }).errors.forEach((e: Error): never => {
             throw e;
         });
     }
 
-    return readings.map(reading => reading.parsed);
-};
+    return readings.map((reading: Reading): Object => reading.parsed as Object);
+}
 
-function array(minItems, items) {
+function array(minItems: number, items: Object): Object {
     return {
         type: "array",
         minItems: minItems,
@@ -128,24 +135,24 @@ function array(minItems, items) {
     };
 }
 
-function objectAllRequired(properties, params) {
+function objectAllRequired(properties: Object, params: Object = {}): Object {
     return Object.assign(
         {
             type: "object",
             required: Object.getOwnPropertyNames(properties),
             properties: properties
         },
-        typeof params === "undefined" ? {} : params
+        params
     );
 }
 
-async function collectReadings(paths, dest, level) {
-    await all(paths.map(path => (async () => {
+async function collectReadings(paths: string[], dest: Reading[], level: number): Promise<void> {
+    await all(paths.map((path: string): Promise<void> => (async (): Promise<void> => {
         let stats = await stat(path);
 
         if (stats.isDirectory()) {
             await collectReadings(
-                (await readdir(path)).map(subPath => join(path, subPath)),
+                (await readdir(path)).map((subPath: string): string => join(path, subPath)),
                 dest,
                 level + 1
             );
