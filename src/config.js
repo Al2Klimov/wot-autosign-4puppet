@@ -7,7 +7,7 @@ const {join} = require("path");
 
 const {
     fs: {readFile},
-    Promise: {all}
+    promise: {all}
 } = require("./util/misc");
 
 

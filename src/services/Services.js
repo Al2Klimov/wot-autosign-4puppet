@@ -2,7 +2,7 @@
 
 
 const {Mutex} = require("../concurrency/Mutex");
-const {Promise: {all}} = require("../util/misc");
+const {promise: {all}} = require("../util/misc");
 
 
 module.exports = class {

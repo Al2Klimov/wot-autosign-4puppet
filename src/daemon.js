@@ -9,7 +9,7 @@ const {config: {print: puppet}} = require("./puppet");
 const Services = require("./services/Services");
 
 const {
-    Promise: {all},
+    promise: {all},
     tempEvents
 } = require("./util/misc");
 

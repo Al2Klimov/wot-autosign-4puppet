@@ -15,7 +15,7 @@ const {agentNames2Filter} = require("./util");
 const {
     fs: {readFile},
     middleware: {fromPromiseFactory, handleErrors},
-    Promise: {all}
+    promise: {all}
 } = require("../../util/misc");
 
 

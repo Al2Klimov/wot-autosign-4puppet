@@ -18,7 +18,7 @@ const {agentNames2Filter} = require("./util");
 
 const {
     child_process: {wait},
-    Promise: {all}
+    promise: {all}
 } = require("../../util/misc");
 
 
