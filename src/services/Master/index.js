@@ -3,7 +3,7 @@
 
 const {spawn} = require("child_process");
 const {createHash} = require("crypto");
-const Db = require("../Db");
+const {Db} = require("../Db");
 const {DirectoryFeed} = require("../DirectoryFeed");
 const HTTPd = require("./HTTPd");
 const {Logger} = require("../../Logger");
