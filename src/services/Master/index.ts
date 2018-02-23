@@ -6,6 +6,7 @@ import {MasterConfig} from "../../config";
 import {createHash} from "crypto";
 import {Db} from "../Db";
 import {DirectoryFeed} from "../DirectoryFeed";
+import {FilesLoader} from "../FilesLoader";
 import {HTTPd} from "./HTTPd";
 import {Logger} from "../../Logger";
 import {child_process, crypto, promise} from "../../util/misc";
@@ -41,7 +42,9 @@ export class Master implements Service {
     private services: Services;
 
     public constructor(config: MasterConfig, puppetConfig: Map<string, string>) {
-        let missing = ["csrdir"].filter((key: string): boolean => !puppetConfig.has(key));
+        let missing = ["hostcert", "hostprivkey", "cacert", "cacrl", "csrdir"].filter(
+            (key: string): boolean => !puppetConfig.has(key)
+        );
 
         if (missing.length) {
             throw new Error("Missing Puppet config directives: " + JSON.stringify(missing).replace(/[[\]]/, ""));
@@ -63,13 +66,18 @@ export class Master implements Service {
             "CREATE TABLE agent ( name TEXT PRIMARY KEY, csr_chksum_algo TEXT, csr_chksum TEXT );"
         ]);
 
+        let filesLoader = new FilesLoader(new Set<string>(["hostcert", "hostprivkey", "cacert", "cacrl"].map(
+            (key: string): string => puppetConfig.get(key) as string
+        )));
+
         this.services = new Services(
             {
                 db: this.db,
+                filesLoader: filesLoader,
                 directoryFeed: (new DirectoryFeed(this.csrdir))
                     .on("change", this.onCsrDirChange.bind(this))
                     .on("error", onError),
-                httpd: (new HTTPd(config, puppetConfig, this.db))
+                httpd: (new HTTPd(config, puppetConfig, this.db, filesLoader))
                     .on("agent", this.onNewAgent.bind(this))
                     .on("error", onError),
                 taskExecutor: this.taskExecutor,
@@ -77,7 +85,7 @@ export class Master implements Service {
             },
             {
                 directoryFeed: ["db", "taskExecutor", "timer"],
-                httpd: ["db", "taskExecutor", "timer"],
+                httpd: ["db", "filesLoader", "taskExecutor", "timer"],
                 taskExecutor: ["db"],
                 timer: ["db"]
             }

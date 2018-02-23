@@ -7,6 +7,7 @@ import {Db} from "../Db";
 import {EventEmitter} from "events";
 import * as express from "express";
 import {Application, Request, Response} from "express";
+import {FilesLoader} from "../FilesLoader";
 import {https} from "../../util/promisified";
 import {hidePoweredBy, noCache} from "helmet";
 import {createServer, Server} from "https";
@@ -34,27 +35,21 @@ export class HTTPd extends EventEmitter implements Service {
     private config: MasterConfig;
     private puppetConfig: Map<string, string>;
     private db: Db;
+    private filesLoader: FilesLoader;
     private server: Server | null;
     private stateChangeMutex: Mutex;
     private webOfTrust: Trust[];
 
-    public constructor(config: MasterConfig, puppetConfig: Map<string, string>, db: Db) {
+    public constructor(config: MasterConfig, puppetConfig: Map<string, string>, db: Db, filesLoader: FilesLoader) {
         super();
 
         this.config = config;
         this.puppetConfig = puppetConfig;
         this.db = db;
+        this.filesLoader = filesLoader;
         this.server = null;
         this.stateChangeMutex = new Mutex();
         this.webOfTrust = [];
-
-        let missing = ["hostcert", "hostprivkey", "cacert", "cacrl"].filter(
-            (key: string): boolean => !puppetConfig.has(key)
-        );
-
-        if (missing.length) {
-            throw new Error("Missing Puppet config directives: " + JSON.stringify(missing).replace(/[[\]]/, ""));
-        }
 
         for (let wot of config.web_of_trust) {
             this.webOfTrust.push({
@@ -67,24 +62,21 @@ export class HTTPd extends EventEmitter implements Service {
     public start(): Promise<void> {
         return this.stateChangeMutex.enqueue(async (): Promise<void> => {
             if (this.server === null) {
-                let [hostcert, hostprivkey, cacert, cacrl] = await all(
-                    ["hostcert", "hostprivkey", "cacert", "cacrl"].map(
-                        (key: string): Promise<string> => readFile(this.puppetConfig.get(key) as string, "utf8")
-                    )
-                );
-
                 let onError = (err: Error, req: Request, res: Response, next: (...args: any[]) => void): void => {
                     this.emit("error", err);
                 };
 
                 this.server = createServer(
                     {
-                        cert: [cacert, hostcert],
-                        key: hostprivkey,
+                        cert: [
+                            (this.filesLoader.contents.get(this.puppetConfig.get("cacert") as string) as Buffer).toString(),
+                            (this.filesLoader.contents.get(this.puppetConfig.get("hostcert") as string) as Buffer).toString()
+                        ],
+                        key: (this.filesLoader.contents.get(this.puppetConfig.get("hostprivkey") as string) as Buffer).toString(),
                         requestCert: true,
                         rejectUnauthorized: true,
-                        ca: cacert,
-                        crl: cacrl,
+                        ca: (this.filesLoader.contents.get(this.puppetConfig.get("cacert") as string) as Buffer).toString(),
+                        crl: (this.filesLoader.contents.get(this.puppetConfig.get("cacrl") as string) as Buffer).toString(),
                         secureProtocol: "TLSv1_2_method"
                     },
                     this.express(onError)
