@@ -2,7 +2,7 @@
 
 
 import {Agent} from "./services/Agent";
-import {load as config, MasterConfig} from "./config";
+import {AgentConfig, load as config, MasterConfig} from "./config";
 import {Logger} from "./Logger";
 import {Master} from "./services/Master";
 import {promise, tempEvents} from "./util/misc";
@@ -39,7 +39,7 @@ let logger = new Logger("critical");
                 throw new Error("More than one agent service defined");
             }
 
-            services.agent = new Agent();
+            services.agent = new Agent(config as AgentConfig, puppetConfigs);
         }
     }
 

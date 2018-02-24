@@ -37,6 +37,8 @@
     "express": "^4.16.2",
     "helmet": "^3.9.0",
     "jsonschema": "^1.2.2",
+    "request": "^2.83.0",
+    "request-promise-native": "^1.0.5",
     "sqlite3": "^3.1.13"
   },
   "devDependencies": {
@@ -45,6 +47,8 @@
     "@types/helmet": "0.0.37",
     "@types/jsonschema": "^1.1.1",
     "@types/node": "^9.4.6",
+    "@types/request": "^2.47.0",
+    "@types/request-promise-native": "^1.0.13",
     "@types/sqlite3": "^3.1.1",
     "typescript": "^2.6.2"
   }

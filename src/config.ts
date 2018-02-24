@@ -13,6 +13,10 @@ const {readFile} = fs;
 
 type AgentNames = string[] | string;
 
+interface Logging {
+    level: "critical" | "error" | "warning" | "info" | "debug";
+}
+
 export interface MasterConfig {
     listen: {
         address: string;
@@ -24,11 +28,19 @@ export interface MasterConfig {
         responsible: AgentNames;
     }[];
 
-    logging: {
-        level: "critical" | "error" | "warning" | "info" | "debug";
-    };
-
+    logging: Logging;
     datadir: string;
+}
+
+export interface AgentConfig {
+    csrdir: string;
+    datadir: string;
+    logging: Logging;
+
+    master: {
+        host: string;
+        port: number;
+    };
 }
 
 let configValidator = new Validator();
@@ -92,7 +104,7 @@ let schema = {
         objectAllRequired(
             {
                 csrdir: {type: "string"},
-                db: {type: "string"},
+                datadir: {type: "string"},
                 logging: logging,
                 master: objectAllRequired({
                     host: {
@@ -116,7 +128,7 @@ interface Reading {
     parsed?: Object;
 }
 
-export async function load(paths: string[]): Promise<Object[]> {
+export async function load(paths: string[]): Promise<(MasterConfig | AgentConfig)[]> {
     let readings: Reading[] = [];
 
     await collectReadings(paths, readings, 0);
@@ -144,7 +156,7 @@ export async function load(paths: string[]): Promise<Object[]> {
         });
     }
 
-    return readings.map((reading: Reading): Object => reading.parsed as Object);
+    return readings.map((reading: Reading): MasterConfig | AgentConfig => reading.parsed as MasterConfig | AgentConfig);
 }
 
 function array(minItems: number, items: Object): Object {
