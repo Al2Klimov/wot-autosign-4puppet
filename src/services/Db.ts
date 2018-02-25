@@ -37,7 +37,7 @@ export class Db implements Service {
 
                         try {
                             let tmpDb = join(tmpDir, "db.sqlite3");
-                            let conn = await newDb(tmpDb, OPEN_CREATE);
+                            let conn = await newDb(tmpDb, OPEN_CREATE | OPEN_READWRITE);
 
                             try {
                                 try {
