@@ -1,4 +1,8 @@
-# wot-autosign-4puppet -- Automatically signs Puppet(R) agent CSRs based on a web of trust
+# wot-autosign-4puppet
+
+Automatically signs Puppet(R) agent CSRs based on a web of trust.
+
+## Copyright
 
 Copyright (C) 2017-2018  Alexander A. Klimov
 
